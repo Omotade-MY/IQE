@@ -35,6 +35,7 @@ def summarizer(content, modifiers=""):
         You are an expert instructional designer analyzing course content.
         Provide a comprehensive summary highlighting:
 
+        Content Summary and Scope Confirmation
         [ Your response summary: Main focus, audience, thesis, Estimated learning duration]​
 
         Goals / Objectives Summary
@@ -46,6 +47,7 @@ def summarizer(content, modifiers=""):
          
         - Present the summary to the user for confirmation.
         Ask the users some follow up questions like:
+        Follow-Up Questions:
             - Did I reasonably capture the intention and goal of your course?
             - Are there specific areas of Instructional Quality you feel I should focus on?
             - Are there any changes you could envision (add, remove, modify…) that could incorporate into my evaluation and response?

@@ -135,11 +135,11 @@ class DesignEvaluator(Evaluator):
                 "Dick": self.evaluate_sliding(
                     "Dick and Carey Instructional Design Model"
                 ),
-                "SAM": self.evaluate_sliding("SAM (Successive Approximation Model)"),
-                "Shackilton": self.evaluate_sliding("Shackilton 5Di Model"),
-                "Arches": self.evaluate_sliding(
-                    "Learning Arches and Learning Spaces (Kaospilot)"
-                ),
+                # "SAM": self.evaluate_sliding("SAM (Successive Approximation Model)"),
+                # "Shackilton": self.evaluate_sliding("Shackilton 5Di Model"),
+                # "Arches": self.evaluate_sliding(
+                #     "Learning Arches and Learning Spaces (Kaospilot)"
+                # ),
             }
         else:
             content_eval_tmpl_str = LLamaPromptTemplate(
@@ -153,9 +153,9 @@ class DesignEvaluator(Evaluator):
             )
             return {
                 "Dick": self.eval_dick(),
-                "SAM": self.eval_sam(),
-                "Shackilton": self.eval_shackilton(),
-                "Arches": self.eval_arches(),
+                # "SAM": self.eval_sam(),
+                # "Shackilton": self.eval_shackilton(),
+                # "Arches": self.eval_arches(),
             }
 
     def evaluate_sliding(self, model_name):
@@ -197,18 +197,18 @@ class TransferEvaluator(Evaluator):
         if slide:
             return {
                 "Action": self.evaluate_sliding("Action Mapping (Cathy Moore)"),
-                "Decisive": self.evaluate_sliding(
-                    "The Decisive Dozen (Dr. Will Thalheimer, PhD)"
-                ),
-                "Wiggins": self.evaluate_sliding(
-                    "Wiggins and McTighe Backwards Design Model (UbD)"
-                ),
+                # "Decisive": self.evaluate_sliding(
+                #     "The Decisive Dozen (Dr. Will Thalheimer, PhD)"
+                # ),
+                # "Wiggins": self.evaluate_sliding(
+                #     "Wiggins and McTighe Backwards Design Model (UbD)"
+                # ),
             }
 
         return {
             "Action": self.eval_action(),
-            "Decisive": self.eval_decisive(),
-            "Wiggins": self.eval_wiggins(),
+            # "Decisive": self.eval_decisive(),
+            # "Wiggins": self.eval_wiggins(),
         }
 
     def evaluate_sliding(self, model_name):
@@ -250,14 +250,14 @@ class PerformanceEvaluator(Evaluator):
         if slide:
             return {
                 "Mager": self.evaluate_sliding("Mager and Pipe Model"),
-                "Behaviour": self.evaluate_sliding("Behavior Engineering Model"),
-                "Addie": self.evaluate_sliding("ADDIE Model"),
+                # "Behaviour": self.evaluate_sliding("Behavior Engineering Model"),
+                # "Addie": self.evaluate_sliding("ADDIE Model"),
             }
 
         return {
             "Addie": self.eval_addie(),
-            "Behavior": self.eval_behavior(),
-            "Mager": self.eval_mager(),
+            # "Behavior": self.eval_behavior(),
+            # "Mager": self.eval_mager(),
         }
 
     def evaluate_sliding(self, model_name):

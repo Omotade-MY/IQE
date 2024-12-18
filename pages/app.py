@@ -246,39 +246,14 @@ class CourseEvaluatorApp:
 
     # Sidebar: File Upload
     def main(self):
-        st.sidebar.title("Upload Your Course Materials")
+
+        st.sidebar.title("Upload Your Course Material")
         uploaded_file = st.sidebar.file_uploader(
-            "Upload your course materials:", type=["pdf", "mp3", "mp4"]
+            "Upload your course materials:", type=["pdf", "mp3"]
         )
         youtube_url = st.sidebar.text_input("Or provide a YouTube URL")
-        if "youtube_url" not in st.session_state:
-            st.session_state["youtube_url"] = youtube_url
-        # Sidebar: Instructions
-        st.sidebar.title("Instructions")
-        st.sidebar.markdown(
-            """
-            ### How to Use:
-            1. **Attach Course Files**:
-            - Upload the course files you want evaluated (PDFs, YouTube links, or audio files).
-            - If you provided a YouTube link , click Enter to apply
-            2. **Summary and Confirmation**:
-                - I will verify the course structure and categories, and confirm the level of critique you prefer.
-            3. **Critque Level**
-                - Provide a critique level: (0 - 10)
-            4. **Evaluation Frameworks**:
-               - I will evaluate your course using various proven frameworks.
-            5. **Summarized Results**:
-              - At the end, you will receive a summary with ratings and actionable insights.
-            6. ** Suggestions**:
-              - Based on the evaluation, I will provide actionable insights and suggestions
-            7. **Downlaodable Report**:
-              - You can download the report for further analysis or sharing.
-
-            **Note**: The system may ocassionally jump a step, if you need to go through that step, you can remind the model to go back to the step
-            """
-        )
         # Custom CSS to modify sidebar and page layout
-        st.markdown(
+        st.sidebar.markdown(
             """
             <style>
             [data-testid="stSidebar"] {
@@ -296,21 +271,46 @@ class CourseEvaluatorApp:
             unsafe_allow_html=True,
         )
 
-        # Title at the top of the page
+        if "youtube_url" not in st.session_state:
+            st.session_state["youtube_url"] = youtube_url
+            st.session_state["instruction"] = True
+        # Sidebar: Instructions
+
+        # Welcome Message
         st.markdown(
-            '<h1 class="main-title">Instructional Quality Agent (IQA)  Prototype</h1>',
+            """
+                <h1 class="main-title">Instructional Quality Agent (IQA)  Prototype</h1>
+
+                Check out the upload steps on your left. <span class="arrow">←</span>
+                """,
             unsafe_allow_html=True,
         )
 
-        if "content_summary" not in st.session_state:
+        if st.session_state.get("instruction", True):
+
+            # Instructions Moved to Main Area
             st.markdown(
                 """
-                Welcome to the Instructional Quality Prototype.  I am your virtual IQP guide or co-researcher and I’ll be walking you through a variety of steps to evaluate your course.
-                This process includes a number of  steps. I will keep you informed along the way. You can ask me to repeat a step.
-                You can also guide me and build on my ideas, with me or separately. You are in the driver’s seat; I am just your tool.
+                ### How to Use:
+                1. **Attach A Course Material**:
+                    - Upload the course material you want evaluate (PDF, YouTube link, or audio file).
+                    - If you provided a YouTube link, click on enter to apply.
+                2. **Summary and Scope Confirmation**:
+                    - I will verify the course structure and categories, and confirm if I capture the content of the course.
+                3. **Critique Level**:
+                    - Provide a critique level: (0 - 10).
+                4. **Evaluation Frameworks**:
+                    - I will evaluate your course using various proven frameworks.
+                5. **Summarized Results**:
+                    - At the end, you will receive a summary with ratings and actionable insights.
+                6. **Suggestions**:
+                    - Based on the evaluation, I will provide actionable insights and suggestions.
+                7. **Downloadable Report**:
+                    - You can download the report for further analysis or sharing.
+
+                **Note**: The system may occasionally jump a step; if you need to go through that step, you can remind the model to go back to it.
                 """
             )
-
         else:
             with st.columns(1)[0]:
                 st.markdown(
@@ -325,7 +325,7 @@ class CourseEvaluatorApp:
             if uploaded_file:
                 st.success(f"File '{uploaded_file.name}' uploaded successfully!")
                 content = self.process_file(uploaded_file)
-
+                st.session_state["instruction"] = False
                 if content["content_type"] == "pdf":
                     if content["metadata"]["pages"] >= 20:
                         st.session_state["content_is_large"] = True
@@ -361,6 +361,7 @@ class CourseEvaluatorApp:
             # print(type(content))
             summarizer = ContentSummarizer(content)
             st.session_state["summarizer"] = summarizer
+        st.session_state["instruction"] = False
 
         # else:
         #     if not (uploaded_file or st.session_state['youtube_url']):

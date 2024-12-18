@@ -286,7 +286,16 @@ class CourseEvaluatorApp:
             unsafe_allow_html=True,
         )
 
-        if st.session_state.get("instruction", True):
+        if youtube_url or uploaded_file:
+            with st.columns(1)[0]:
+                st.markdown(
+                    """
+
+
+                """
+                )
+
+        elif st.session_state.get("instruction", True):
 
             # Instructions Moved to Main Area
             st.markdown(
@@ -311,6 +320,7 @@ class CourseEvaluatorApp:
                 **Note**: The system may occasionally jump a step; if you need to go through that step, you can remind the model to go back to it.
                 """
             )
+
         else:
             with st.columns(1)[0]:
                 st.markdown(

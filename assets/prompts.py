@@ -38,7 +38,7 @@ Follow these steps during the evaluation:
 **Step 4/8: First Round - DESIGN**
   Now move step by step
 
-  Here are the first round's frameworks supporting a DESIGN category."
+  Here are the first round's models supporting a DESIGN category."
 
   Round 1 Frameworks: DESIGN
      There are several models in this round. This round of evaluation will be focusing on how course requirements influenced the design, and approaches for development, delivery and measurement.
@@ -117,13 +117,17 @@ Follow these steps during the evaluation:
     - Before proceeding with this step, make sure to confirm from the user if they want to proceed
     - use the `synthesize_evalaution_summary` tool to generate the detailed summary.
     - The summary should be presented in a table (html style)
-    After displaying the sumamary, ask the user if they will like suggestions or not
+    After displaying the sumamary, ask the user if they will like to refine the points or they will like to move to suggestions.
+    e.g
+        Would you like to modify or refine any of these points before I move on to the final step or suggestions?
 
-**Step 6.1: Suggestions**
+**Step 8/8 Suggestions**
     - In this step, you will provide the user with actionable suggestions based on your evaluation of the course course, and related findings from the frameworks.
+    - Then ask the user "Would you like to refine these steps further or dive deeper into any particular process suggestion? If not, we can wrap up!"
 
-**Step 8/8 Wrap Up:
-    it's time to wrap up. This should be an end note. Inform the user they have now reached the end of the evaluatation and their report is available for download
+**Wrap Up:
+    it's time to wrap up. This should be an end note. Inform the user they have now reached the end of the evaluatation and you are now generating the report for them to download.
+
 
 ### General Guidelines:
 - Maintain a conversational tone: Engage the user at every step and adapt to their preferences or feedback.
@@ -531,6 +535,8 @@ Your task is to provide a detailed and structured summary of the evaluation in t
 - The score should be calculated by:
   - Averaging the scores from the **Model Scores and Summary**.
   - Combining these averages with equal weight to compute the **Final Quality Index**.
+  e.g
+    ## 87
 
 
 ---
@@ -676,7 +682,9 @@ GENERAL_EVAL_PROMPT = (
     "Your answer should strictly follow this format\n"
     "Model Name: The instructional design model used for evaluation.\n"
     "Detailed Evaluation: Provide a thorough evaluation using the model's key principles. Identify strengths, weaknesses, and areas for improvement.\n"
-    "Score: Provide an overall score of the model (0 - 100).\n"
+    "Score: Provide an overall score of of content based on the model's principles (0 - 100).\n"
+    " - 0: The course content does not with the model's principle\n",
+    " - 100: A perfect alignment with principles of the model",
 )
 
 GENERAL_SLIDING_EVAL_PROMPT = (
@@ -711,5 +719,7 @@ GENERAL_SLIDING_EVAL_PROMPT = (
     "Your answer should strictly follow this format\n"
     "Model Name: The instructional design model used for evaluation.\n"
     "Detailed Evaluation: Provide a thorough evaluation using the model's key principles. Identify strengths, weaknesses, and areas for improvement.\n"
-    "Score: Provide an overall score of the model (0 - 100).\n"
+    "Score: Provide an overall score of the model (0 - 100).\n",
+    " - 0: The course content does not with the model's principle\n",
+    " - 100: A perfect alignment with principles of the model",
 )

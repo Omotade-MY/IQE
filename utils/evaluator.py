@@ -141,6 +141,7 @@ class DesignEvaluator(Evaluator):
                 #     "Learning Arches and Learning Spaces (Kaospilot)"
                 # ),
             }
+
         else:
             content_eval_tmpl_str = LLamaPromptTemplate(
                 self.base_prompt

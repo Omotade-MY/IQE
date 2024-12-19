@@ -43,10 +43,6 @@ class Evaluator(ABC):
     def set_critique(self, N=5):
         self.N = N
 
-    # @abstractmethod
-    # def evaluate_sliding(self, content):
-    #     pass
-
     def sliding_window(self, content):
         if content["content_type"] == "pdf":
             page_count = 10
@@ -141,6 +137,7 @@ class DesignEvaluator(Evaluator):
                     "Learning Arches and Learning Spaces (Kaospilot)"
                 ),
             }
+
         else:
             content_eval_tmpl_str = LLamaPromptTemplate(
                 self.base_prompt
@@ -279,15 +276,15 @@ class Tools:
 
     @tool
     def design_frameworks(critique_level: int):
-        """Use this tool to carry out evalutation using the DESIGN Frameworks. Input to this tool is the critique level"""
+        """Use this tool to carry out the First Round evalutation using all the DESIGN Frameworks in a single call. Input to this tool is the critique level"""
 
     @tool
     def transer_work_frameworks(critique_level: int):
-        """Use this tool to carry out evaluation using the TRANSFER/ WORK Frameworks. Input to this tool is the critique level"""
+        """Use this tool to carry out the Secound Round evaluation using all the  TRANSFER/ WORK Frameworks in a single call. Input to this tool is the critique level"""
 
     @tool
     def perform_man_frameworks(critique_level: int):
-        """Use this tool to carry out evaluation using the PERFORM/ MAN Frameworks. Input to this tool is the critique level"""
+        """Use this tool to carry out the Thrid Round evaluation using all the PERFORMANCE/ MANANGEMENT Frameworks in a single call. Input to this tool is the critique level"""
 
     @tool
     def synthesize_evalaution_summary():

@@ -19,7 +19,11 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.sqlite import SqliteSaver
 import sqlite3
 from typing import Dict, Any, Annotated
-from assets.prompts import SYSTEM_PROMPT, SUMMARY_SYNTHESIS_PROMPT
+from assets.prompts import (
+    CONTENT_SUMMARY_PROMPT,
+    SYSTEM_PROMPT,
+    SUMMARY_SYNTHESIS_PROMPT,
+)
 from utils.evaluator import Tools
 
 
@@ -29,45 +33,6 @@ llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
 # Define all the chains
-
-
-def summarizer(content, modifiers=""):
-    """Generate comprehensive content summary"""
-    additions = f"Additional information from the user: {modifiers}"
-    content_text, content_type = content["raw_text"], content["content_type"]
-    prompt = """System Prompt:
-        You are an expert instructional designer analyzing course content.
-        Provide a comprehensive summary highlighting:
-
-        Content Summary and Scope Confirmation
-        [ Your response summary: Main focus, audience, thesis, Estimated learning duration]​
-
-        Goals / Objectives Summary
-        [summary in bullets]
-
-        Summary of Structure
-        [summary of main components in bullets]
-
-
-        - Present the summary to the user for confirmation.
-        Ask the users some follow up questions like:
-        Follow-Up Questions:
-            - Did I reasonably capture the intention and goal of your course?
-            - Are there specific areas of Instructional Quality you feel I should focus on?
-            - Are there any changes you could envision (add, remove, modify…) that could incorporate into my evaluation and response?
-        - If the user provides feedback or requests adjustments, refine the summary accordingly.'
-
-         Content Type: {content_type}
-         Content: "{content}
-         """ + (
-        additions if modifiers else ""
-    )
-    summary_prompt = PromptTemplate.from_template(prompt)
-
-    summary_prompt = summary_prompt.partial(content_type=content_type)
-    chain = summary_prompt | llm
-    summary = chain.invoke(content_text)
-    return {"summary": summary.content}
 
 
 class ContentSummarizer:
@@ -83,33 +48,7 @@ class ContentSummarizer:
 
     def get_prompts(self, modifiers):
         additions = f"Additional information from the user: {modifiers}"
-        prompt = """System Prompt:
-            You are an expert instructional designer analyzing course content.
-            Provide a comprehensive summary highlighting:
-
-            Content Summary and Scope Confirmation
-            [ Your response summary: Main focus, audience, thesis, Estimated learning duration]​
-
-            Goals / Objectives Summary
-            [summary in bullets]
-
-            Summary of Structure
-            [summary of main components in bullets]
-
-
-            - Present the summary to the user for confirmation.
-            Ask the users some follow up questions like:
-            Follow-Up Questions:
-                - Did I reasonably capture the intention and goal of your course?
-                - Are there specific areas of Instructional Quality you feel I should focus on?
-                - Are there any changes you could envision (add, remove, modify…) that could incorporate into my evaluation and response?
-            - If the user provides feedback or requests adjustments, refine the summary accordingly.'
-
-                Content Type: {content_type}
-                Content: "{text}
-                """ + (
-            additions if modifiers else ""
-        )
+        prompt = CONTENT_SUMMARY_PROMPT + (additions if modifiers else "")
         summary_prompt = PromptTemplate.from_template(prompt)
 
         summary_prompt = summary_prompt.partial(content_type=self.content_type)

@@ -43,10 +43,6 @@ class Evaluator(ABC):
     def set_critique(self, N=5):
         self.N = N
 
-    # @abstractmethod
-    # def evaluate_sliding(self, content):
-    #     pass
-
     def sliding_window(self, content):
         if content["content_type"] == "pdf":
             page_count = 10
@@ -135,11 +131,11 @@ class DesignEvaluator(Evaluator):
                 "Dick": self.evaluate_sliding(
                     "Dick and Carey Instructional Design Model"
                 ),
-                # "SAM": self.evaluate_sliding("SAM (Successive Approximation Model)"),
-                # "Shackilton": self.evaluate_sliding("Shackilton 5Di Model"),
-                # "Arches": self.evaluate_sliding(
-                #     "Learning Arches and Learning Spaces (Kaospilot)"
-                # ),
+                "SAM": self.evaluate_sliding("SAM (Successive Approximation Model)"),
+                "Shackilton": self.evaluate_sliding("Shackilton 5Di Model"),
+                "Arches": self.evaluate_sliding(
+                    "Learning Arches and Learning Spaces (Kaospilot)"
+                ),
             }
 
         else:
@@ -154,9 +150,9 @@ class DesignEvaluator(Evaluator):
             )
             return {
                 "Dick": self.eval_dick(),
-                # "SAM": self.eval_sam(),
-                # "Shackilton": self.eval_shackilton(),
-                # "Arches": self.eval_arches(),
+                "SAM": self.eval_sam(),
+                "Shackilton": self.eval_shackilton(),
+                "Arches": self.eval_arches(),
             }
 
     def evaluate_sliding(self, model_name):
@@ -198,18 +194,18 @@ class TransferEvaluator(Evaluator):
         if slide:
             return {
                 "Action": self.evaluate_sliding("Action Mapping (Cathy Moore)"),
-                # "Decisive": self.evaluate_sliding(
-                #     "The Decisive Dozen (Dr. Will Thalheimer, PhD)"
-                # ),
-                # "Wiggins": self.evaluate_sliding(
-                #     "Wiggins and McTighe Backwards Design Model (UbD)"
-                # ),
+                "Decisive": self.evaluate_sliding(
+                    "The Decisive Dozen (Dr. Will Thalheimer, PhD)"
+                ),
+                "Wiggins": self.evaluate_sliding(
+                    "Wiggins and McTighe Backwards Design Model (UbD)"
+                ),
             }
 
         return {
             "Action": self.eval_action(),
-            # "Decisive": self.eval_decisive(),
-            # "Wiggins": self.eval_wiggins(),
+            "Decisive": self.eval_decisive(),
+            "Wiggins": self.eval_wiggins(),
         }
 
     def evaluate_sliding(self, model_name):
@@ -251,14 +247,14 @@ class PerformanceEvaluator(Evaluator):
         if slide:
             return {
                 "Mager": self.evaluate_sliding("Mager and Pipe Model"),
-                # "Behaviour": self.evaluate_sliding("Behavior Engineering Model"),
-                # "Addie": self.evaluate_sliding("ADDIE Model"),
+                "Behaviour": self.evaluate_sliding("Behavior Engineering Model"),
+                "Addie": self.evaluate_sliding("ADDIE Model"),
             }
 
         return {
             "Addie": self.eval_addie(),
-            # "Behavior": self.eval_behavior(),
-            # "Mager": self.eval_mager(),
+            "Behavior": self.eval_behavior(),
+            "Mager": self.eval_mager(),
         }
 
     def evaluate_sliding(self, model_name):
@@ -280,15 +276,15 @@ class Tools:
 
     @tool
     def design_frameworks(critique_level: int):
-        """Use this tool to carry out evalutation using the DESIGN Frameworks. Input to this tool is the critique level"""
+        """Use this tool to carry out the First Round evalutation using all the DESIGN Frameworks in a single call. Input to this tool is the critique level"""
 
     @tool
     def transer_work_frameworks(critique_level: int):
-        """Use this tool to carry out evaluation using the TRANSFER/ WORK Frameworks. Input to this tool is the critique level"""
+        """Use this tool to carry out the Secound Round evaluation using all the  TRANSFER/ WORK Frameworks in a single call. Input to this tool is the critique level"""
 
     @tool
     def perform_man_frameworks(critique_level: int):
-        """Use this tool to carry out evaluation using the PERFORM/ MAN Frameworks. Input to this tool is the critique level"""
+        """Use this tool to carry out the Thrid Round evaluation using all the PERFORMANCE/ MANANGEMENT Frameworks in a single call. Input to this tool is the critique level"""
 
     @tool
     def synthesize_evalaution_summary():

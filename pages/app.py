@@ -107,6 +107,7 @@ class CourseEvaluatorApp:
                         design.set_critique(**critique)
                         if st.session_state["content_is_large"]:
                             design_eval = design.eval_design(slide=True)
+
                         else:
                             design_eval = design.eval_design()
 

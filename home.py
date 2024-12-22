@@ -11,7 +11,7 @@ st.markdown(
     """Refine your course content effortlessly in just 10-15 minutes.
             Upload your materials (PDF, MP3, MP4, or YouTube link) to get actionable feedback on design, transferability, and performance. Your input is private and securely analyzed using advanced AI insights.
             Inspired by cutting-edge instructional frameworks, this tool empowers educators to deliver exceptional learning experiences.
-            Sample needs"""
+            Sample needs:"""
 )
 
 

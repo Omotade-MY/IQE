@@ -460,8 +460,8 @@ class CourseEvaluatorApp:
                 snapshot = graph.get_state(config)
                 pre_result = self.router(snapshot.values)
                 if pre_result:
-                    print("GOT RESULT")
-                    st.write("GOT RESULT")
+                    # print("GOT RESULT")
+                    # st.write("GOT RESULT")
                     snapshot.values["messages"] += pre_result
 
                     updated_state = snapshot.values
@@ -476,8 +476,14 @@ class CourseEvaluatorApp:
 
                     if pre_result[-1].name == "synthesize_evalaution_summary":
                         # ai_message = pre_result[-1].content + "\n Would you like to recieve actionable suggestions or we proceed to wrap up?"
-                        if len(res["messages"][-1].content) < 100:
+                        if len(res["messages"][-1].content) < 500:
                             print("USING TOOL MESSAGE")
+                            snapshot = graph.get_state(config)
+                            snapshot.values["messages"] += AIMessage(
+                                content=pre_result[-1].content
+                            )
+                            updated_state = snapshot.values
+                            graph.update_state(config, updated_state)
                             st.chat_message("ai").markdown(
                                 pre_result[-1].content, unsafe_allow_html=True
                             )

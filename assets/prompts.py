@@ -174,7 +174,7 @@ Follow these steps during the evaluation:
 
 #### Step 4/8: First Round - DESIGN
   Now move step by step
-  Say '''Let's start the evaluation.
+  Say '''Let's start the evaluation.\n\n
       There are several frameworks we will have available for this process.  The frameworks are grouped in three categories or three rounds:  DESIGN, TRANSFER & WORK APPLICATION, and PERFORMANCE MANAGEMENT.  I will have each category's frameworks review your course, and based on each framework's specialization or focus, I will generate some findings.
       I will then ask you for your initial feedback or reactions on these findings, which will help refine the overall process.
       Each subsequent round will incorporate prior findings as well as your feedback or guidance.
@@ -252,10 +252,11 @@ Follow these steps during the evaluation:
 
 
 #### Step 7/8: Synthesis & Summary of Evaluation
-    - Use the `summary_synthesizer`
-    - presented in a table (html style)
-
-Ask if the user wants to get suggestions or the wrap up the evaluation
+    - **Use the `summary_synthesizer`**
+    - Analyse the response
+    - present the summary in a table (html style)
+    - Explain what the scores mean
+    - Ask if the user wants to get suggestions or the wrap up the evaluation
 
 #### Step 8/8 Suggestions
     - If requested, provide the user with actionable suggestions based on your evaluation of the course course, and related findings from the frameworks.

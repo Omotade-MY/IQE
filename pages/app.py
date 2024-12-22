@@ -30,6 +30,8 @@ if "content_is_large" not in st.session_state:
 
 import uuid
 
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+
 
 def generate_unique_id():
     """
@@ -301,7 +303,8 @@ class CourseEvaluatorApp:
             # Instructions Moved to Main Area
             st.markdown(
                 """
-                ### How to Use:
+                ## Instruction
+                #### How to Use:
                 1. **Attach A Course Material**:
                     - Upload the course material you want evaluate (PDF, YouTube link, or audio file).
                     - If you provided a YouTube link, click on enter to apply.
@@ -449,16 +452,18 @@ class CourseEvaluatorApp:
             st.chat_message("human").write(user_input)
 
             res = graph.invoke({"messages": [user_input]}, config)
-
-            st.chat_message("ai").write(
-                res["messages"][-1].content, unsafe_allow_html=True
-            )
+            ai_message = res["messages"][-1].content
+            if ai_message:
+                st.chat_message("ai").write(ai_message, unsafe_allow_html=True)
 
             while True:
                 snapshot = graph.get_state(config)
                 pre_result = self.router(snapshot.values)
                 if pre_result:
+                    print("GOT RESULT")
+                    st.write("GOT RESULT")
                     snapshot.values["messages"] += pre_result
+
                     updated_state = snapshot.values
                     graph.update_state(config, updated_state)
                     res = graph.invoke({"proceed": True}, config)
@@ -469,13 +474,22 @@ class CourseEvaluatorApp:
                         )
                     )
 
-                    # if st.session_state['report_status'] and eval_summary:
-                    #     eval_content = eval_summary[0].content
-                    #     st.chat_message('ai').write(eval_content)
-                    # else:
-                    st.chat_message("ai").markdown(
-                        res["messages"][-1].content, unsafe_allow_html=True
-                    )
+                    if pre_result[-1].name == "synthesize_evalaution_summary":
+                        # ai_message = pre_result[-1].content + "\n Would you like to recieve actionable suggestions or we proceed to wrap up?"
+                        if len(res["messages"][-1].content) < 100:
+                            print("USING TOOL MESSAGE")
+                            st.chat_message("ai").markdown(
+                                pre_result[-1].content, unsafe_allow_html=True
+                            )
+                        else:
+
+                            st.chat_message("ai").markdown(
+                                res["messages"][-1].content, unsafe_allow_html=True
+                            )
+                    else:
+                        st.chat_message("ai").markdown(
+                            res["messages"][-1].content, unsafe_allow_html=True
+                        )
 
                 else:
                     break

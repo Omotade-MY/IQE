@@ -13,8 +13,14 @@ from llama_index.core import (
     PromptTemplate as LLamaPromptTemplate,
     SimpleDirectoryReader,
 )
+from llama_index.llms.openai import OpenAI
+from llama_index.core import Settings
 from llama_index.core import PromptHelper
 from utils.utility import get_relative_path
+
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+
+Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0)
 
 
 class Evaluator(ABC):
@@ -288,7 +294,7 @@ class Tools:
 
     @tool
     def synthesize_evalaution_summary():
-        """Use this tool to carry out Step 5.1, the final summary synthesis of the content evaluations. The tool aggregates content evaluations across the various instructional design frameworks, summarizing scores for key dimensions and models."""
+        """Use this tool to carry out the frameworks evauation summary synthesis , the final summary synthesis of the content evaluations. The tool aggregates content evaluations across all the various instructional evaluation frameworks, summarizing scores for key dimensions and models."""
 
     @tool
     def generate_downloadable_report(report_statements: str):

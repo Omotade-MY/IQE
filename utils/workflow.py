@@ -17,6 +17,7 @@ from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.sqlite import SqliteSaver
+import streamlit as st
 import sqlite3
 from typing import Dict, Any, Annotated
 from assets.prompts import (
@@ -28,9 +29,8 @@ from utils.evaluator import Tools
 
 
 load_dotenv(find_dotenv())
-
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-
 
 # Define all the chains
 

@@ -479,9 +479,9 @@ class CourseEvaluatorApp:
                         if len(res["messages"][-1].content) < 500:
                             print("USING TOOL MESSAGE")
                             snapshot = graph.get_state(config)
-                            snapshot.values["messages"] += AIMessage(
-                                content=pre_result[-1].content
-                            )
+                            snapshot.values["messages"] += [
+                                AIMessage(content=pre_result[-1].content)
+                            ]
                             updated_state = snapshot.values
                             graph.update_state(config, updated_state)
                             st.chat_message("ai").markdown(

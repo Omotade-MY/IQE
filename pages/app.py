@@ -184,7 +184,7 @@ class CourseEvaluatorApp:
                         report, link = self.save_to_pdf(report_statement["report"])
                     st.session_state["report"] = report
                     print("GOT LINK", link)
-                    message = f"Report is saved to {link}."
+                    message = f"Report has been saved to {link}"
 
                     outbound_msgs.append(
                         ToolMessage(
@@ -520,7 +520,7 @@ class CourseEvaluatorApp:
                             st.session_state["last_msg"] = last_msg = snapshot.values[
                                 "messages"
                             ].pop()
-                            snapshot.values["messages"].pop()
+
                             print(last_msg)
                             snapshot.values["messages"] += [
                                 AIMessage(content=pre_result[-1].content)

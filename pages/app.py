@@ -252,9 +252,12 @@ class CourseEvaluatorApp:
 
         st.sidebar.title("Upload Your Course Material")
         uploaded_file = st.sidebar.file_uploader(
-            "Upload your course materials:", type=["pdf", "mp3"]
+            "Upload your course materials. \n Note: with this prototype we have limited upload features and cannot attach zip files or non-YouTube URL links\n",
+            type=["pdf", "mp3"],
         )
-        youtube_url = st.sidebar.text_input("Or provide a YouTube URL")
+        youtube_url = st.sidebar.text_input(
+            "Or provide a YouTube URL.\nFor any YouTube course, note that with v1, if the YouTube course does not have a transcript the course cannot be evaluated"
+        )
         # Custom CSS to modify sidebar and page layout
         st.sidebar.markdown(
             """
@@ -303,8 +306,8 @@ class CourseEvaluatorApp:
             # Instructions Moved to Main Area
             st.markdown(
                 """
-                ## Instruction
-                #### How to Use:
+                ## Instructions
+
                 1. **Attach A Course Material**:
                     - Upload the course material you want evaluate (PDF, YouTube link, or audio file).
                     - If you provided a YouTube link, click on enter to apply.

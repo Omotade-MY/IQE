@@ -471,7 +471,12 @@ Reminder, this is a prototype so scoring will not be precise.'''
 </table>
 
 2. **Dimension Summary**
+Say '''
 Here is a 17-dimensional summary weights of the learning content. The content is weighted 0-10 for each dimension
+Quality of Attainment Scoring:
+0: Low Attainment - The desired outcome is absent or not achieved.
+10:High Attainment - The outcome surpasses expectations, demonstrating expert skill, creativity, and a deep understanding.
+'''
 
 <table>
     <tr>
@@ -606,11 +611,14 @@ Reminder, this is a prototype so scoring will not be precise.'''
 
 2. **Dimension Summary**
 
-*Add this as the begining of the dimension summary
-Here is a 17-dimensional summary weights of the learning content. The content is weighted 0-10 for each dimension
-Quality of Attainment Scoring:
-0: Low Attainment - The desired outcome is absent or not achieved.
+Display all of this to the user and explain what the score means exactly like this
+'''
+Here is a 17-dimensional summary weights of the learning content. I have weighted the content between 0-10 as a quality of attainment for each dimension.\n
+Quality of Attainment Scoring:\n
+0: Low Attainment - The desired outcome is absent or not achieved.\n
 10:High Attainment - The outcome surpasses expectations, demonstrating expert skill, creativity, and a deep understanding.
+'''
+[Summary Table here]
 
 
 

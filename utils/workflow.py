@@ -80,6 +80,28 @@ def evaluation_summarizer(state):
     return {"summary": eval_summary.content}
 
 
+def report_generator(state):
+    messages = state["messages"]
+    report_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
+    report_prompt_template = """
+    You are evaluating an instructional course content. Given the evaluation history below
+    ---------------
+    {history}
+    ----------------
+    Generate a summary report with the following:
+    Summary Tables: Present relevant summary tables [Include the explanation of the scores].
+    Explanations: Briefly explain the key insights from each table.
+    Recommendations: Include actionable suggestions based on the data.
+    Keep the report focused and to the point.
+
+    """
+    report_prompt = PromptTemplate.from_template(report_prompt_template)
+    report_chain = report_prompt | report_llm
+    report = report_chain.invoke(messages)
+
+    return {"report": report.content}
+
+
 path = "memory.sqlite"
 
 memconn = sqlite3.connect(path, check_same_thread=False)

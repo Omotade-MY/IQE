@@ -8,6 +8,8 @@ import streamlit as st
 from io import BytesIO
 from markdown_pdf import MarkdownPdf, Section
 import os
+import tempfile
+from pathlib import Path
 from utils.processors import (
     PDFProcessor,
     VideoProcessor,
@@ -15,7 +17,12 @@ from utils.processors import (
     DummyProcessor,
 )
 from utils.evaluator import DesignEvaluator, TransferEvaluator, PerformanceEvaluator
-from utils.workflow import workflow_builder, evaluation_summarizer, ContentSummarizer
+from utils.workflow import (
+    workflow_builder,
+    evaluation_summarizer,
+    report_generator,
+    ContentSummarizer,
+)
 from assets.prompts import (
     SYSTEM_PROMPT,
     GENERAL_EVAL_PROMPT,
@@ -172,9 +179,12 @@ class CourseEvaluatorApp:
                     # print("Generating Report")
                     report_statements = tool_call["args"]
                     st.session_state["report_status"] = True
-                    report = self.save_to_pdf(**report_statements)
+                    with st.spinner("Generating Report"):
+                        report_statement = report_generator(state)
+                        report, link = self.save_to_pdf(report_statement["report"])
                     st.session_state["report"] = report
-                    message = f"report saved"
+                    print("GOT LINK", link)
+                    message = f"Report has been saved to {link}"
 
                     outbound_msgs.append(
                         ToolMessage(
@@ -237,24 +247,46 @@ class CourseEvaluatorApp:
             bool
         """
 
+        @st.cache_resource
+        def cleanup_file(file_path):
+            return file_path
+
+        # Clean up the temporary file on rerun
+        # cleanup_file(tmp_file_path)
+
+        def create_download_link(pdf_content, filename="EvaluationReport.pdf"):
+            if not Path("sandbox").exists():
+                os.mkdir("sandbox")
+            cwd = os.getcwd()
+            filepath = os.path.join(cwd, "sandbox", filename)
+            pdf_content.save(filepath)
+
+            return filepath
+
         pdf = MarkdownPdf(toc_level=1)
         pdf.add_section(Section(report_statements))
         # Use an in-memory buffer
         pdf_buffer = BytesIO()
+
         pdf_buffer.seek(0)
         pdf.save(pdf_buffer)
-        # st.download_button("Download Evaluation PDF", data=pdf_buffer, file_name="Evaluation_Summary_Report.pdf", mime="application/pdf")
 
-        return pdf_buffer
+        # st.download_button("Download Evaluation PDF", data=pdf_buffer, file_name="Evaluation_Summary_Report.pdf", mime="application/pdf")
+        link = create_download_link(pdf)
+        print(link)
+        return pdf_buffer, link
 
     # Sidebar: File Upload
     def main(self):
 
         st.sidebar.title("Upload Your Course Material")
         uploaded_file = st.sidebar.file_uploader(
-            "Upload your course materials:", type=["pdf", "mp3"]
+            "Upload your course materials. \n Note: with this prototype we have limited upload features and cannot attach zip files or non-YouTube URL links\n",
+            type=["pdf", "mp3"],
         )
-        youtube_url = st.sidebar.text_input("Or provide a YouTube URL")
+        youtube_url = st.sidebar.text_input(
+            "Or provide a YouTube URL.\nFor any YouTube course, note that with v1, if the YouTube course does not have a transcript the course cannot be evaluated"
+        )
         # Custom CSS to modify sidebar and page layout
         st.sidebar.markdown(
             """
@@ -303,8 +335,8 @@ class CourseEvaluatorApp:
             # Instructions Moved to Main Area
             st.markdown(
                 """
-                ## Instruction
-                #### How to Use:
+                ## Instructions
+
                 1. **Attach A Course Material**:
                     - Upload the course material you want evaluate (PDF, YouTube link, or audio file).
                     - If you provided a YouTube link, click on enter to apply.
@@ -444,7 +476,13 @@ class CourseEvaluatorApp:
                 if isinstance(message, HumanMessage):
                     st.chat_message("human").write(message.content)
                 elif isinstance(message, AIMessage):
-                    st.chat_message("ai").write(message.content, unsafe_allow_html=True)
+                    if message == st.session_state.get("last_msg"):
+                        pass
+                    if message.content:
+                        st.chat_message("ai").write(
+                            message.content, unsafe_allow_html=True
+                        )
+
         else:
             st.write("No messages found")
 
@@ -473,12 +511,17 @@ class CourseEvaluatorApp:
                             snapshot.values["messages"],
                         )
                     )
-
+                    ai_message = res["messages"][-1].content
                     if pre_result[-1].name == "synthesize_evalaution_summary":
                         # ai_message = pre_result[-1].content + "\n Would you like to recieve actionable suggestions or we proceed to wrap up?"
                         if len(res["messages"][-1].content) < 500:
                             print("USING TOOL MESSAGE")
                             snapshot = graph.get_state(config)
+                            st.session_state["last_msg"] = last_msg = snapshot.values[
+                                "messages"
+                            ].pop()
+
+                            print(last_msg)
                             snapshot.values["messages"] += [
                                 AIMessage(content=pre_result[-1].content)
                             ]
@@ -488,20 +531,29 @@ class CourseEvaluatorApp:
                                 pre_result[-1].content, unsafe_allow_html=True
                             )
                         else:
-
-                            st.chat_message("ai").markdown(
-                                res["messages"][-1].content, unsafe_allow_html=True
-                            )
+                            if ai_message:
+                                st.chat_message("ai").markdown(
+                                    ai_message, unsafe_allow_html=True
+                                )
                     else:
-                        st.chat_message("ai").markdown(
-                            res["messages"][-1].content, unsafe_allow_html=True
-                        )
+                        if ai_message:
+                            st.chat_message("ai").write(
+                                ai_message, unsafe_allow_html=True
+                            )
 
                 else:
                     break
         if st.session_state["report_status"]:
             # snapshot = graph.get_state(config)
-            try:
+            if st.session_state["report"]:
+                st.download_button(
+                    "Download Evaluation PDF",
+                    data=st.session_state["report"],
+                    file_name="Evaluation_Summary_Report.pdf",
+                    mime="application/pdf",
+                )
+
+            else:
                 content = list(
                     filter(
                         lambda msg: msg.name == "synthesize_evalaution_summary",
@@ -511,17 +563,12 @@ class CourseEvaluatorApp:
                 report_buffer = self.save_to_pdf(content)
                 st.download_button(
                     "Download Evaluation PDF",
-                    data=report_buffer,
+                    data=report_buffer[0],
                     file_name="Evaluation_Summary_Report.pdf",
                     mime="application/pdf",
                 )
-            except IndexError:
-                st.download_button(
-                    "Download Evaluation PDF",
-                    data=st.session_state["report"],
-                    file_name="Evaluation_Summary_Report.pdf",
-                    mime="application/pdf",
-                )
+            # except IndexError:
+
             st.session_state["report_status"] = False
 
 

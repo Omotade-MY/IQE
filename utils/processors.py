@@ -86,7 +86,8 @@ class VideoProcessor(BaseProcessor):
             transcripts = loader.load()
 
             if not transcripts:
-                raise ValueError("No transcript available")
+                erro_msg = "Oops No transcript available. Course cannot be evaluated. Please provide a Youtube course with transcription"
+                raise ValueError(erro_msg)
             text = ""
             for doc in transcripts:
                 text += (

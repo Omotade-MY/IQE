@@ -718,7 +718,7 @@ if __name__ == "__main__":
             st.error(
                 "Oops! System Could not process the message\n The content you provided is too large or the model ran out memory space"
             )
-    # except Exception as err:
-    #     st.write(f"Error occure {str(err)}. Please reload page")
+    except Exception as err:
+        st.write(f"Error occure {str(err)}. Please reload page")
     # except Exception as err:
     #     st.error(f"Error has occured {str(err)}")

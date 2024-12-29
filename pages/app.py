@@ -267,7 +267,7 @@ class CourseEvaluatorApp:
                         report_statement = report_generator(state)
                         report, link = self.save_to_pdf(report_statement["report"])
                     st.session_state["report"] = report
-                    print("GOT LINK", link)
+                    # print("GOT LINK", link)
                     message = f"Report has been saved to {link}"
 
                     outbound_msgs.append(
@@ -380,7 +380,7 @@ class CourseEvaluatorApp:
 
         # st.download_button("Download Evaluation PDF", data=pdf_buffer, file_name="Evaluation_Summary_Report.pdf", mime="application/pdf")
         link = create_download_link(pdf)
-        print(link)
+        # print(link)
         return pdf_buffer, link
 
     # Sidebar: File Upload
@@ -591,6 +591,7 @@ class CourseEvaluatorApp:
         # st.write(snapshot)
 
         messages = snapshot.values.get("messages", [])
+        # steps = snapshot.values.get("messages", [])
         if messages:
             for message in snapshot.values["messages"]:
                 if isinstance(message, HumanMessage):
@@ -640,14 +641,15 @@ class CourseEvaluatorApp:
                     ai_message = res["messages"][-1].content
                     if pre_result[-1].name == "synthesize_evalaution_summary":
                         # ai_message = pre_result[-1].content + "\n Would you like to recieve actionable suggestions or we proceed to wrap up?"
+
                         if len(res["messages"][-1].content) < 500:
-                            print("USING TOOL MESSAGE")
+                            # print("USING TOOL MESSAGE")
                             snapshot = graph.get_state(config)
                             st.session_state["last_msg"] = last_msg = snapshot.values[
                                 "messages"
                             ].pop()
 
-                            print(last_msg)
+                            # print(last_msg)
                             snapshot.values["messages"] += [
                                 AIMessage(content=pre_result[-1].content)
                             ]
@@ -669,9 +671,18 @@ class CourseEvaluatorApp:
 
                 else:
                     break
-        if st.session_state["report_status"]:
-            # snapshot = graph.get_state(config)
-            if st.session_state["report"]:
+
+        if (st.session_state["steps"][-1].completed) or (
+            st.session_state["steps"][-2].completed
+        ):
+            with st.spinner("Generating Report"):
+                if "report" not in st.session_state:
+                    report_statement = report_generator({"messages": messages})
+                    report, link = self.save_to_pdf(report_statement["report"])
+                    st.session_state["report"] = report
+                    st.toast("Report Now available for download", icon="📄")
+                # if st.session_state["report_status"]:
+                # snapshot = graph.get_state(config)
                 st.download_button(
                     "Download Evaluation PDF",
                     data=st.session_state["report"],
@@ -679,23 +690,23 @@ class CourseEvaluatorApp:
                     mime="application/pdf",
                 )
 
-            else:
-                content = list(
-                    filter(
-                        lambda msg: msg.name == "synthesize_evalaution_summary",
-                        snapshot.values["messages"],
-                    )
-                )[0].content
-                report_buffer = self.save_to_pdf(content)
-                st.download_button(
-                    "Download Evaluation PDF",
-                    data=report_buffer[0],
-                    file_name="Evaluation_Summary_Report.pdf",
-                    mime="application/pdf",
-                )
-            # except IndexError:
+            # else:
+            #     content = list(
+            #         filter(
+            #             lambda msg: msg.name == "synthesize_evalaution_summary",
+            #             snapshot.values["messages"],
+            #         )
+            #     )[0].content
+            #     report_buffer = self.save_to_pdf(content)
+            #     st.download_button(
+            #         "Download Evaluation PDF",
+            #         data=report_buffer[0],
+            #         file_name="Evaluation_Summary_Report.pdf",
+            #         mime="application/pdf",
+            #     )
+            # # except IndexError:
 
-            st.session_state["report_status"] = False
+            # st.session_state["report_status"] = False
 
 
 if __name__ == "__main__":

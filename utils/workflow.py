@@ -88,8 +88,13 @@ def report_generator(state):
     ---------------
     {history}
     ----------------
-    Generate a summary report with the following:
+    Generate a summary report based on the summary and evaluation given to you. The summary report you have the following:
+    Include the name of the course as the title
     Summary Tables: Present relevant summary tables [Include the explanation of the scores].
+        it includes each model and its framework
+        Scores
+        The explantion of the scores
+        Present the dimension summry table as well
     Explanations: Briefly explain the key insights from each table.
     Recommendations: Include actionable suggestions based on the data.
     Keep the report focused and to the point.
@@ -112,7 +117,7 @@ tools = [
     Tools.perform_man_frameworks,
     Tools.transer_work_frameworks,
     Tools.synthesize_evalaution_summary,
-    Tools.generate_downloadable_report,
+    # Tools.generate_downloadable_report,
     Tools.request_content,
 ]
 
@@ -163,7 +168,7 @@ def agent(state: CourseEvaluationState):
     # print("invoking the model")
 
     step_num = state["steps"]["current_step"]
-    print(state["steps"])
+    # print(state["steps"])
     current_step = state["steps"]["steps"][step_num]
     instruct = state["steps"]["steps"].get("instruction", "")
 

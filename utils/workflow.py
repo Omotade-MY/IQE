@@ -89,12 +89,8 @@ def report_generator(state):
     {history}
     ----------------
     Generate a summary report based on the summary and evaluation given to you. The summary report you have the following:
-    Include the name of the course as the title
-    Summary Tables: Present relevant summary tables [Include the explanation of the scores].
-        it includes each model and its framework
-        Scores
-        The explantion of the scores
-        Present the dimension summry table as well
+    Include the name of the course as the
+    Summary Tables: Present relevant summary tables [Include the scores and explanation of the scores].
     Explanations: Briefly explain the key insights from each table.
     Recommendations: Include actionable suggestions based on the data.
     Keep the report focused and to the point.

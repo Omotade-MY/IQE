@@ -34,6 +34,29 @@ def summarize_resources(docs, model_name):
     return summary["output_text"]
 
 
+def log_llm_activity(messages, file_path="llm_activity.log"):
+    """
+    Logs the activity of an LLM to a file, including human, AI, system, and tool messages.
+
+    Args:
+        messages (list): A list of message dictionaries, where each dictionary contains:
+                         - "type": The type of message ("human", "ai", "system", or "tool").
+                         - "content": The content of the message.
+        file_path (str): The file path where the log will be saved.
+    """
+    with open(file_path, "a") as log_file:  # Append to the file to keep a history
+        log_file.write("=== LLM Activity Log ===\n")
+        for message in messages:
+
+            tool_name = None
+            if hasattr(message, "tool_calls") and len(message.tool_calls) > 0:
+                tool_names = [tool_call["name"] for tool_call in message.tool_calls]
+            log_file.write(
+                f"[{message.type.upper()}] {message.content}\n Additional: {tool_name}\n"
+            )
+        log_file.write("\n")
+
+
 def fetch_resources(framework, links):
     # Directory to save the text files
     Path("data").mkdir(exist_ok=True)

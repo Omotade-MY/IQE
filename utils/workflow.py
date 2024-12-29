@@ -124,7 +124,34 @@ class CourseEvaluationState(TypedDict):
     proceed: bool
     content: Dict[str, Any]
     content_type: str = ""
-    summary: str = ""
+    steps: dict
+
+
+class StepState:
+    name: str
+    number: int
+    started: bool = False
+    inprogess: bool = False
+    completed: bool = False
+    status: str = "not_stated"
+
+    def update(self):
+        if self.completed:
+            self.status = "completed"
+        elif self.inprogess:
+            self.status = "inprogres"
+
+
+steps_list = [
+    "Content Intake & Validation",
+    "Scope Confirmation",
+    "Level of Critique",
+    "First Round - DESIGN",
+    "Second Round - TRANSFER",
+    "Third Round - PERFORMANCE",
+    "Synthesis & Summary",
+    "Suggestions",
+]
 
 
 def agent(state: CourseEvaluationState):
@@ -134,7 +161,15 @@ def agent(state: CourseEvaluationState):
         state["messages"].insert(0, SystemMessage(content=SYSTEM_PROMPT))
 
     # print("invoking the model")
-    res = model.invoke(input=state["messages"])
+
+    step_num = state["steps"]["current_step"]
+    print(state["steps"])
+    current_step = state["steps"]["steps"][step_num]
+    instruct = state["steps"]["steps"].get("instruction", "")
+
+    state_info = f"\nBelow is information about the current state of evaluation for your reminder\n-------\nStep Number: {step_num}\nCurrent Step: {current_step}\n{instruct}\n-------"
+    state_info = SystemMessage(content=state_info)
+    res = model.invoke(input=state["messages"] + [state_info])
     return state | {"messages": [res]}
 
 

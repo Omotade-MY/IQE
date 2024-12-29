@@ -88,8 +88,13 @@ def report_generator(state):
     ---------------
     {history}
     ----------------
-    Generate a summary report with the following:
+    Generate a summary report based on the summary and evaluation given to you. The summary report you have the following:
+    Include the name of the course as the title
     Summary Tables: Present relevant summary tables [Include the explanation of the scores].
+        it includes each model and its framework
+        Scores
+        The explantion of the scores
+        Present the dimension summry table as well
     Explanations: Briefly explain the key insights from each table.
     Recommendations: Include actionable suggestions based on the data.
     Keep the report focused and to the point.
@@ -112,7 +117,7 @@ tools = [
     Tools.perform_man_frameworks,
     Tools.transer_work_frameworks,
     Tools.synthesize_evalaution_summary,
-    Tools.generate_downloadable_report,
+    # Tools.generate_downloadable_report,
     Tools.request_content,
 ]
 
@@ -124,7 +129,34 @@ class CourseEvaluationState(TypedDict):
     proceed: bool
     content: Dict[str, Any]
     content_type: str = ""
-    summary: str = ""
+    steps: dict
+
+
+class StepState:
+    name: str
+    number: int
+    started: bool = False
+    inprogess: bool = False
+    completed: bool = False
+    status: str = "not_stated"
+
+    def update(self):
+        if self.completed:
+            self.status = "completed"
+        elif self.inprogess:
+            self.status = "inprogres"
+
+
+steps_list = [
+    "Content Intake & Validation",
+    "Scope Confirmation",
+    "Level of Critique",
+    "First Round - DESIGN",
+    "Second Round - TRANSFER",
+    "Third Round - PERFORMANCE",
+    "Synthesis & Summary",
+    "Suggestions",
+]
 
 
 def agent(state: CourseEvaluationState):
@@ -134,7 +166,15 @@ def agent(state: CourseEvaluationState):
         state["messages"].insert(0, SystemMessage(content=SYSTEM_PROMPT))
 
     # print("invoking the model")
-    res = model.invoke(input=state["messages"])
+
+    step_num = state["steps"]["current_step"]
+    # print(state["steps"])
+    current_step = state["steps"]["steps"][step_num]
+    instruct = state["steps"]["steps"].get("instruction", "")
+
+    state_info = f"\nBelow is information about the current state of evaluation for your reminder\n-------\nStep Number: {step_num}\nCurrent Step: {current_step}\n{instruct}\n-------"
+    state_info = SystemMessage(content=state_info)
+    res = model.invoke(input=state["messages"] + [state_info])
     return state | {"messages": [res]}
 
 

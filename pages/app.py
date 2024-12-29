@@ -18,11 +18,15 @@ from utils.processors import (
 )
 from utils.evaluator import DesignEvaluator, TransferEvaluator, PerformanceEvaluator
 from utils.workflow import (
+    StepState,
     workflow_builder,
     evaluation_summarizer,
     report_generator,
     ContentSummarizer,
+    steps_list,
+    StepState,
 )
+from utils.utility import log_llm_activity
 from assets.prompts import (
     SYSTEM_PROMPT,
     GENERAL_EVAL_PROMPT,
@@ -35,6 +39,38 @@ st.session_state["report_status"] = False
 if "content_is_large" not in st.session_state:
     st.session_state["content_is_large"] = False
 
+
+if "steps" not in st.session_state:
+    steps = []
+    for n, name in enumerate(steps_list):
+        step = StepState()
+        step.name = name
+        step.number = n
+        steps.append(step)
+    st.session_state["steps"] = steps
+
+
+step_state = {
+    "current_step": 1,  # Tracks the active step
+    "steps": {
+        1: {"name": "Content Intake & Validation", "status": "not_started"},
+        2: {"name": "Scope Confirmation", "status": "not_started"},
+        3: {"name": "Level of Critique", "status": "not_started"},
+        4: {"name": "First Round - DESIGN", "status": "not_started"},
+        5: {"name": "Second Round - TRANSFER", "status": "not_started"},
+        6: {"name": "Third Round - PERFORMANCE", "status": "not_started"},
+        7: {
+            "name": "Synthesis & Summary",
+            "status": "not_started",
+            "instruction": """Here is the instruction again for your reminder \n #### Step 7/8: Synthesis & Summary of Evaluation
+    - **Use the `summary_synthesizer`**
+    - Analyse the response
+    - present the summary in a table (html style)
+    - Explain what the scores mean""",
+        },
+        8: {"name": "Suggestions", "status": "not_started"},
+    },
+}
 import uuid
 
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
@@ -102,6 +138,7 @@ class CourseEvaluatorApp:
                 "request_content",
             ]
             outbound_msgs = []
+            outbound_steps = []
             for tool_call in message.tool_calls:
                 if tool_call["name"] not in available_tools:
                     raise ValueError(
@@ -109,9 +146,12 @@ class CourseEvaluatorApp:
                     )
 
                 if tool_call["name"] == "design_frameworks":
+                    st.session_state["steps"][3].started = True
                     design = st.session_state["design_evaluator"]
+
                     ## Call the preliminary review chain
                     with st.spinner("Evaluating Design Frameworks"):
+                        st.session_state["steps"][3].inprogess = True
                         critique = tool_call["args"]
                         design.set_critique(**critique)
                         if st.session_state["content_is_large"]:
@@ -120,6 +160,10 @@ class CourseEvaluatorApp:
                         else:
                             design_eval = design.eval_design()
 
+                        st.session_state["steps"][3].completed = True
+                        st.session_state["steps"][3].inprogess = False
+                        st.session_state["steps"][3].started = False
+
                         outbound_msgs.append(
                             ToolMessage(
                                 content=str(design_eval),
@@ -127,6 +171,13 @@ class CourseEvaluatorApp:
                                 tool_call_id=tool_call["id"],
                             )
                         )
+                        # outbound_steps.append(
+                        #     StepState(
+                        #         name = steps[3].name,
+                        #         number = steps[3].number,
+                        #         completed = True
+                        #     )
+                        # )
 
                 elif tool_call["name"] == "transer_work_frameworks":
                     transfer = st.session_state["transfer_evaluator"]
@@ -137,6 +188,11 @@ class CourseEvaluatorApp:
                             tranaser_eval = transfer.eval_transfer(slide=True)
                         else:
                             tranaser_eval = transfer.eval_transfer()
+
+                        st.session_state["steps"][4].completed = True
+                        st.session_state["steps"][4].inprogess = False
+                        st.session_state["steps"][4].started = False
+
                         outbound_msgs.append(
                             ToolMessage(
                                 content=str(tranaser_eval),
@@ -144,7 +200,13 @@ class CourseEvaluatorApp:
                                 tool_call_id=tool_call["id"],
                             )
                         )
-
+                        # outbound_steps.append(
+                        #     StepState(
+                        #         name = steps[4].name,
+                        #         number = steps[4].number,
+                        #         completed = True
+                        #     )
+                        # )
                 elif tool_call["name"] == "perform_man_frameworks":
                     performance = st.session_state["performance_evaluator"]
                     with st.spinner("Evaluation Performance and Management Frameworks"):
@@ -154,6 +216,17 @@ class CourseEvaluatorApp:
                             performance_eval = performance.eval_performance(slide=True)
                         else:
                             performance_eval = performance.eval_performance()
+
+                        st.session_state["steps"][5].completed = True
+                        st.session_state["steps"][5].inprogess = False
+                        st.session_state["steps"][5].started = False
+                        # outbound_steps.append(
+                        #     StepState(
+                        #         name = steps[5].name,
+                        #         number = steps[5].number,
+                        #         completed = True
+                        #     )
+                        # )
                         outbound_msgs.append(
                             ToolMessage(
                                 content=str(performance_eval),
@@ -167,13 +240,24 @@ class CourseEvaluatorApp:
                     with st.spinner("Running Evaluation Summary Synthesizer"):
                         eval_summary = evaluation_summarizer(state)
                         # st.markdown(eval_summary['summary'])
-                        outbound_msgs.append(
-                            ToolMessage(
-                                content=eval_summary["summary"],
-                                name=tool_call["name"],
-                                tool_call_id=tool_call["id"],
-                            )
+
+                    st.session_state["steps"][6].completed = True
+                    st.session_state["steps"][6].inprogess = False
+                    st.session_state["steps"][6].started = False
+                    # outbound_steps.append(
+                    #     StepState(
+                    #         name = steps[6].name,
+                    #         number = steps[6].number,
+                    #         completed = True
+                    #     )
+                    # )
+                    outbound_msgs.append(
+                        ToolMessage(
+                            content=eval_summary["summary"],
+                            name=tool_call["name"],
+                            tool_call_id=tool_call["id"],
                         )
+                    )
 
                 elif tool_call["name"] == "generate_downloadable_report":
                     # print("Generating Report")
@@ -183,7 +267,7 @@ class CourseEvaluatorApp:
                         report_statement = report_generator(state)
                         report, link = self.save_to_pdf(report_statement["report"])
                     st.session_state["report"] = report
-                    print("GOT LINK", link)
+                    # print("GOT LINK", link)
                     message = f"Report has been saved to {link}"
 
                     outbound_msgs.append(
@@ -205,6 +289,18 @@ class CourseEvaluatorApp:
                         summary = {"summary": "Summarizer is not found"}
 
                     st.session_state["content_summary"] = summary
+
+                    st.session_state["steps"][1].completed = True
+                    st.session_state["steps"][1].inprogess = False
+                    st.session_state["steps"][1].started = False
+
+                    # outbound_steps.append(
+                    #     StepState(
+                    #         name = steps[1].name,
+                    #         number = steps[1].number,
+                    #         completed = True
+                    #     )
+                    # )
                     outbound_msgs.append(
                         ToolMessage(
                             content=summary["summary"],
@@ -214,6 +310,17 @@ class CourseEvaluatorApp:
                     )
 
                 elif tool_call["name"] == "request_content":
+                    st.session_state["steps"][0].completed = True
+                    st.session_state["steps"][0].inprogess = False
+                    st.session_state["steps"][0].started = False
+
+                    # outbound_steps.append(
+                    #     StepState(
+                    #         name = steps[0].name,
+                    #         number = steps[0].number,
+                    #         completed = True
+                    #     )
+                    # )
                     outbound_msgs.append(
                         ToolMessage(
                             content="Uploaded",
@@ -273,7 +380,7 @@ class CourseEvaluatorApp:
 
         # st.download_button("Download Evaluation PDF", data=pdf_buffer, file_name="Evaluation_Summary_Report.pdf", mime="application/pdf")
         link = create_download_link(pdf)
-        print(link)
+        # print(link)
         return pdf_buffer, link
 
     # Sidebar: File Upload
@@ -368,8 +475,10 @@ class CourseEvaluatorApp:
 
         # Step 3.1: Confirmation Page
         if "content" not in st.session_state:
+            st.session_state["steps"][0].started = True
             if uploaded_file:
                 st.success(f"File '{uploaded_file.name}' uploaded successfully!")
+                st.session_state["steps"][0].inprogess = True
                 content = self.process_file(uploaded_file)
                 st.session_state["instruction"] = False
                 if content["content_type"] == "pdf":
@@ -399,14 +508,19 @@ class CourseEvaluatorApp:
                             st.stop()
             else:
                 st.sidebar.info(
-                    "Please upload your course materials here or Provide a YouTube link to your course"
+                    "Please upload your course materials here or Provide a Yo uTube link to your course"
                 )
                 st.stop()
 
             st.session_state["content"] = content
             # print(type(content))
+            st.session_state["steps"][0].completed = True
+            st.session_state["steps"][0].inprogess = False
+            st.session_state["steps"][0].started = False
             summarizer = ContentSummarizer(content)
             st.session_state["summarizer"] = summarizer
+            st.session_state["steps"][1].started = True
+
         st.session_state["instruction"] = False
 
         # else:
@@ -444,7 +558,11 @@ class CourseEvaluatorApp:
         else:
             try:
                 with st.spinner("Detecting Content Scope"):
+                    st.session_state["steps"][1].inprogress = True
                     summary = summarizer.summarize()
+                    st.session_state["steps"][1].completed = True
+                    st.session_state["steps"][1].inprogress = False
+                    st.session_state["steps"][1].started = False
                     # print(summary)
                     st.session_state["content_summary"] = summary
                     st.subheader("Extracted Content Summary")
@@ -464,13 +582,16 @@ class CourseEvaluatorApp:
                     (AIMessage(content=summary["summary"]))
                 )
                 # Update the graph state
-                new_messages = snapshot.values
-                graph.update_state(config, new_messages)
+            if "steps" not in snapshot.values:
+                snapshot.values["steps"] = step_state
+            new_messages = snapshot.values
+            graph.update_state(config, new_messages)
 
         snapshot = graph.get_state(config)
         # st.write(snapshot)
 
         messages = snapshot.values.get("messages", [])
+        # steps = snapshot.values.get("messages", [])
         if messages:
             for message in snapshot.values["messages"]:
                 if isinstance(message, HumanMessage):
@@ -488,8 +609,10 @@ class CourseEvaluatorApp:
 
         if user_input := st.chat_input():
             st.chat_message("human").write(user_input)
-
+            log_llm_activity([HumanMessage(content=user_input)])  # Log User input
             res = graph.invoke({"messages": [user_input]}, config)
+            # print(res)
+            log_llm_activity([res["messages"][-1]])  # AI Response
             ai_message = res["messages"][-1].content
             if ai_message:
                 st.chat_message("ai").write(ai_message, unsafe_allow_html=True)
@@ -501,27 +624,32 @@ class CourseEvaluatorApp:
                     # print("GOT RESULT")
                     # st.write("GOT RESULT")
                     snapshot.values["messages"] += pre_result
-
+                    current_step_num = snapshot.values["steps"]["current_step"]
+                    steps = st.session_state.get("steps")
+                    step = list(
+                        filter(lambda val: val.number == current_step_num, steps)
+                    )[0]
+                    step.update()  # Updated the step status
+                    snapshot.values["steps"]["steps"][current_step_num][
+                        "status"
+                    ] = step.status
+                    snapshot.values["steps"]["current_step"] += 1
                     updated_state = snapshot.values
                     graph.update_state(config, updated_state)
                     res = graph.invoke({"proceed": True}, config)
-                    eval_summary = list(
-                        filter(
-                            lambda msg: msg.name == "synthesize_evalaution_summary",
-                            snapshot.values["messages"],
-                        )
-                    )
+                    log_llm_activity([res["messages"][-1]])
                     ai_message = res["messages"][-1].content
                     if pre_result[-1].name == "synthesize_evalaution_summary":
                         # ai_message = pre_result[-1].content + "\n Would you like to recieve actionable suggestions or we proceed to wrap up?"
+
                         if len(res["messages"][-1].content) < 500:
-                            print("USING TOOL MESSAGE")
+                            # print("USING TOOL MESSAGE")
                             snapshot = graph.get_state(config)
                             st.session_state["last_msg"] = last_msg = snapshot.values[
                                 "messages"
                             ].pop()
 
-                            print(last_msg)
+                            # print(last_msg)
                             snapshot.values["messages"] += [
                                 AIMessage(content=pre_result[-1].content)
                             ]
@@ -543,9 +671,18 @@ class CourseEvaluatorApp:
 
                 else:
                     break
-        if st.session_state["report_status"]:
-            # snapshot = graph.get_state(config)
-            if st.session_state["report"]:
+
+        if (st.session_state["steps"][-1].completed) or (
+            st.session_state["steps"][-2].completed
+        ):
+            with st.spinner("Generating Report"):
+                if "report" not in st.session_state:
+                    report_statement = report_generator({"messages": messages})
+                    report, link = self.save_to_pdf(report_statement["report"])
+                    st.session_state["report"] = report
+                    st.toast("Report Now available for download", icon="📄")
+                # if st.session_state["report_status"]:
+                # snapshot = graph.get_state(config)
                 st.download_button(
                     "Download Evaluation PDF",
                     data=st.session_state["report"],
@@ -553,23 +690,23 @@ class CourseEvaluatorApp:
                     mime="application/pdf",
                 )
 
-            else:
-                content = list(
-                    filter(
-                        lambda msg: msg.name == "synthesize_evalaution_summary",
-                        snapshot.values["messages"],
-                    )
-                )[0].content
-                report_buffer = self.save_to_pdf(content)
-                st.download_button(
-                    "Download Evaluation PDF",
-                    data=report_buffer[0],
-                    file_name="Evaluation_Summary_Report.pdf",
-                    mime="application/pdf",
-                )
-            # except IndexError:
+            # else:
+            #     content = list(
+            #         filter(
+            #             lambda msg: msg.name == "synthesize_evalaution_summary",
+            #             snapshot.values["messages"],
+            #         )
+            #     )[0].content
+            #     report_buffer = self.save_to_pdf(content)
+            #     st.download_button(
+            #         "Download Evaluation PDF",
+            #         data=report_buffer[0],
+            #         file_name="Evaluation_Summary_Report.pdf",
+            #         mime="application/pdf",
+            #     )
+            # # except IndexError:
 
-            st.session_state["report_status"] = False
+            # st.session_state["report_status"] = False
 
 
 if __name__ == "__main__":
@@ -579,9 +716,9 @@ if __name__ == "__main__":
     except openai.BadRequestError as err:
         if err.status_code == 400:
             st.error(
-                "Oops! System Could not process the content\n The content you provided is too large or the model ran out memory space"
+                "Oops! System Could not process the message\n The content you provided is too large or the model ran out memory space"
             )
-    except Exception as err:
-        st.write(f"Error occure {str(err)}. Please reload page")
+    # except Exception as err:
+    #     st.write(f"Error occure {str(err)}. Please reload page")
     # except Exception as err:
     #     st.error(f"Error has occured {str(err)}")

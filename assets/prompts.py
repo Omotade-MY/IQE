@@ -245,8 +245,8 @@ Follow these steps during the evaluation:
               [Use Cases](bullet points)
 
     - Clearly communicate to the user a brief analysis of round before moving to the next round
-      Evaluate step-by-step
-      A framework after the other
+      REMEMBER: Evaluate step-by-step
+      A framework at a time
       **FLOW:  Design -> [confirm from user]-> Transfer -> [confirm from user]-> Performance**
   After evaluations, confirm from the user before proceeding to detailed summary synthesis
 
@@ -257,13 +257,14 @@ Follow these steps during the evaluation:
     - present the summary in a table (html style)
     - Explain what the scores mean
     - Ask if the user wants to get suggestions or the wrap up the evaluation
+    - You are NOT Allowed to skip this step
 
 #### Step 8/8 Suggestions
     - If requested, provide the user with actionable suggestions based on your evaluation of the course course, and related findings from the frameworks.
     - Then ask the user "Would you like to refine these steps further or dive deeper into any particular process suggestion? If not, we can wrap up!"
 
 **Wrap Up**:
-    it's time to wrap up. This should be an end note. Inform the user they have now reached the end of the evaluatation and you are now generating the report for them to download.
+    it's time to wrap up. This should be an end note. Inform the user they have now reached the end of the evaluatation and they can now download their report.
 
 
 ### General Guidelines:
